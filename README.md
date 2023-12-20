@@ -25,7 +25,9 @@ is simulated by trapping the exec.library calls.
 
 ## How to compile and run
 
+```
 $ sh build.sh
+```
 
 This results in two binaries, 'narrator' and 'translator'.
 
@@ -36,7 +38,9 @@ Then, use 'narrator' to convert phonetic text to PCM samples.
 The 'say.sh' script is for Linux, and will run 'translator', 'narrator', and
 then play the PCM samples with ALSA using 'aplay'.
 
+```
 $ sh say.sh "Hello world."
+```
 
 The PCM samples are S8 (signed 8-bit) at 22200 Hz.
 
