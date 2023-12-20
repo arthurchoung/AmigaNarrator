@@ -39,11 +39,11 @@ static int _library_size = 0;
 #define MAX_RAM (1024*1024)
 static unsigned char _ram[MAX_RAM];
 
-unsigned int _librarybase = 0x4000;
-unsigned int _inputbase = 0x5000;
-unsigned int _outputbase = 0x6000;
-unsigned int _stackpointer = 0xf000;
-unsigned int _mainbase = 0x7000;
+static unsigned int _librarybase = 0x4000;
+static unsigned int _inputbase = 0x5000;
+static unsigned int _outputbase = 0x6000;
+static unsigned int _stackpointer = 0xf000;
+static unsigned int _mainbase = 0x7000;
 
 #define INPUT_BUFSIZE 0x1000
 #define OUTPUT_BUFSIZE 0x1000
