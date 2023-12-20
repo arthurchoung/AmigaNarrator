@@ -25,7 +25,7 @@ is simulated by trapping the exec.library calls.
 
 ## Example
 
-![It is the distant future](Examples/it_is_the_distant_future.wav)
+http://hotdoglinux.com/AmigaNarrator/it_is_the_distant_future.wav
 
 ## How to compile and run
 
