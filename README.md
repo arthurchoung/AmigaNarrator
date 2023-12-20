@@ -18,16 +18,16 @@ https://ataripodcast.libsyn.com/antic-interview-385-software-automatic-mouth-mar
 
 ## Resources
 
-#### Markus Wandel's Amiga Exec disassembly
+Markus Wandel's Amiga Exec disassembly
 https://wandel.ca/homepage/execdis/index.html
 
-#### Amiga Developer Docs
+Amiga Developer Docs
 http://amigadev.elowar.com/
  
-#### Hunk File Format
+Hunk File Format
 http://amiga-dev.wikidot.com/file-format:hunk
 
-#### vamos and hunktool from amitools by Christian Vogelgsang
+vamos and hunktool from amitools by Christian Vogelgsang
 https://github.com/cnvogelg/amitools
 
 ## Legal
