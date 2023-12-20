@@ -64,7 +64,8 @@ static int _allocsignal = 31;
 static unsigned int _mainbase = 0x26000;
 static unsigned int _stackpointer = 0x1f000;
 static unsigned int _libraryname = 0x27000;
-
+static unsigned int _addtask = 0;
+static unsigned int _makelibrary = 0;
 
 void load_library()
 {
@@ -257,19 +258,6 @@ void process_library_with_romtag()
     fprintf(stderr, "rt_Init 0x%x\n", rt_Init);
 
 
-    unsigned int vectors[8];
-    unsigned int vectorbase = 0x6d0;
-    for (int i=0; i<8; i++) {
-        vectors[i] = m68k_read_memory_32(vectorbase+i*4);
-        if (vectors[i] == 0xffffffff) {
-            fprintf(stderr, "end of vectors\n");
-            break;
-        }
-        fprintf(stderr, "vector[%d] = %x\n", i, vectors[i]);
-    }
-
-    unsigned int openfunc = vectors[0];
-    fprintf(stderr, "openfunc %x\n", openfunc);
 
     m68k_write_memory_16(_mainbase, 0x4eb9); //jsr
     m68k_write_memory_32(_mainbase+2, rt_Init);
@@ -281,14 +269,16 @@ void process_library_with_romtag()
     m68k_write_memory_32(_mainbase+16, _narrator_rb);
 
     m68k_write_memory_16(_mainbase+20, 0x4eb9); //jsr
-    m68k_write_memory_32(_mainbase+22, openfunc);
+    _makelibrary = _mainbase+22;
+    m68k_write_memory_32(_makelibrary, 0); //Open function will be filled in by MakeLibrary
 
     m68k_write_memory_16(_mainbase+26, 0x23fc); //move.l #$xxxxxxxx, $xxxxxxxx
     m68k_write_memory_32(_mainbase+28, _librarybase);
     m68k_write_memory_32(_mainbase+32, _stackpointer);
 
     m68k_write_memory_16(_mainbase+36, 0x4eb9); //jsr
-    m68k_write_memory_32(_mainbase+38, 0x00000730); //hardcoded, should get from AddTask
+    _addtask = _mainbase+38;
+    m68k_write_memory_32(_addtask, 0); //address will be filled in by AddTask
 
     m68k_write_memory_32(_mainbase+42, 0x4e722700); //stop $2700
 
@@ -317,22 +307,9 @@ void process_library()
 
     fprintf(stderr, "no ROMTag\n");
 
-    unsigned int vectors[8];
-    unsigned int vectorbase = 0x67e;
-    for (int i=0; i<8; i++) {
-        vectors[i] = m68k_read_memory_32(vectorbase+i*4);
-        if (vectors[i] == 0xffffffff) {
-            fprintf(stderr, "end of vectors\n");
-            break;
-        }
-        fprintf(stderr, "vector[%d] = %x\n", i, vectors[i]);
-    }
-
-    unsigned int openfunc = vectors[0];
-    fprintf(stderr, "openfunc %x\n", openfunc);
 
     m68k_write_memory_16(_mainbase, 0x4eb9); //jsr
-    m68k_write_memory_32(_mainbase+2, 0);
+    m68k_write_memory_32(_mainbase+2, 0); //library init
 
     m68k_write_memory_16(_mainbase+6, 0x7000); //moveq #$0, D0
     m68k_write_memory_16(_mainbase+8, 0x2c7c); //movea.l xxx, A6
@@ -340,13 +317,15 @@ void process_library()
     m68k_write_memory_16(_mainbase+14, 0x227c); //movea.l xxx, A1
     m68k_write_memory_32(_mainbase+16, _narrator_rb);
     m68k_write_memory_16(_mainbase+20, 0x4eb9); //jsr
-    m68k_write_memory_32(_mainbase+22, openfunc);
+    _makelibrary = _mainbase+22;
+    m68k_write_memory_32(_makelibrary, 0); //Open function will be filled in by MakeLibrary
 
     m68k_write_memory_16(_mainbase+26, 0x23fc); //move.l #$xxxxxxxx, $xxxxxxxx
     m68k_write_memory_32(_mainbase+28, _librarybase);
     m68k_write_memory_32(_mainbase+32, _stackpointer);
     m68k_write_memory_16(_mainbase+36, 0x4eb9); //jsr
-    m68k_write_memory_32(_mainbase+38, 0x00005230); //hardcoded, should get from AddTask
+    _addtask = _mainbase+38;
+    m68k_write_memory_32(_addtask, 0); //address will be filled by AddTask
 
     m68k_write_memory_32(_mainbase+42, 0x4e722700); //stop $2700
 
@@ -579,6 +558,7 @@ void instr_hook_callback(unsigned int pc)
                 unsigned int a3 = m68k_get_reg(0, M68K_REG_A3); // finalPC
                 fprintf(stderr, "***** AddTask task %x initialPC %x finalPC %x\n", a1, a2, a3);
                 m68k_set_reg(M68K_REG_D0, _taskbase);
+                m68k_write_memory_32(_addtask, a2); //set the jsr addr in _mainbase
             } else if (arg == 0xffac) { // MakeLibrary -$54
                 unsigned int a0 = m68k_get_reg(0, M68K_REG_A0); // vectors
                 unsigned int a1 = m68k_get_reg(0, M68K_REG_A1); // structure
@@ -587,6 +567,21 @@ void instr_hook_callback(unsigned int pc)
                 unsigned int d1 = m68k_get_reg(0, M68K_REG_D1); // segList
                 fprintf(stderr, "***** MakeLibrary vectors %x structure %x init %x dSize %x segList %x\n", a0, a1, a2, d0, d1);
                 m68k_set_reg(M68K_REG_D0, _librarybase);
+
+                unsigned int vectorbase = a0;
+                for (int i=0; i<8; i++) {
+                    unsigned int vector = m68k_read_memory_32(vectorbase+i*4);
+                    if (vector == 0xffffffff) {
+                        fprintf(stderr, "end of vectors\n");
+                        break;
+                    }
+                    fprintf(stderr, "vector[%d] = %x\n", i, vector);
+                    if (i == 0) {
+                        fprintf(stderr, "openfunc %x\n", vector);
+                        m68k_write_memory_32(_makelibrary, vector); //set the jsr addr in _mainbase
+                    }
+                }
+                
             } else if (arg == 0xfe50) { // AddDevice -$1b0
                 unsigned int a1 = m68k_get_reg(0, M68K_REG_A1); // device
                 fprintf(stderr, "***** AddDevice %x\n", a1);
@@ -769,12 +764,16 @@ void main(int argc, char **argv)
         fprintf(stderr, "Examples:\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "%s \"/HEH4LOW WER4LD.\"\n", argv[0]);
+        fprintf(stderr, "%s -d narrator.device~1.0 \"/HEH4LOW WER4LD.\"\n", argv[0]);
+        fprintf(stderr, "%s -d narrator.device~1.1 \"/HEH4LOW WER4LD.\"\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.2 \"/HEH4LOW WER4LD.\"\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~2.04 \"/HEH4LOW WER4LD.\"\n", argv[0]);
         
         fprintf(stderr, "\n");
         fprintf(stderr, "# read from stdin\n");
         fprintf(stderr, "%s -\n", argv[0]);
+        fprintf(stderr, "%s -d narrator.device~1.0 -\n", argv[0]);
+        fprintf(stderr, "%s -d narrator.device~1.1 -\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.2 -\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~2.04 -\n", argv[0]);
         fprintf(stderr, "\n");
