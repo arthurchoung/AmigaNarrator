@@ -23,6 +23,10 @@ code from the narrator.device and translator.library. The actual code is
 emulated using the Musashi 680x0 CPU emulator, while just enough of the OS
 is simulated by trapping the exec.library calls.
 
+## Example
+
+![It is the distant future](Examples/it_is_the_distant_future.wav)
+
 ## How to compile and run
 
 ```
