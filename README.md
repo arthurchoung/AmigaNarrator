@@ -33,9 +33,47 @@ First, use 'translator' to convert English text to phonetic text.
 
 Then, use 'narrator' to convert phonetic text to PCM samples.
 
-## narrator.device and translator.library
+The 'say.sh' script is for Linux, and will run 'translator', 'narrator', and
+then play the PCM samples with ALSA using 'aplay'.
 
-These files will loaded from the current directory when the program is run.
+$ sh say.sh "Hello world."
+
+The PCM samples are S8 (signed 8-bit) at 22200 Hz.
+
+## narrator.device
+
+This file will be loaded from the current directory when 'narrator' is run. An
+alternative file can be specified using the '-d' flag on 'narrator', but the
+flag does not work on 'say.sh'.
+
+It has been tested with the narrator.device from:
+
+- Workbench 1.0
+- Workbench 1.1
+- Workbench 1.2
+- Workbench 1.3 (same as 1.2)
+- Workbench 2.04
+- Workbench 2.05 (same as 2.04)
+
+This file is not supplied.
+
+## translator.library
+
+This file will be loaded from the current directory when 'translator' is run. An
+alternative file can be specified using the '-l' flag on 'translator', but the
+flag does not work on 'say.sh'.
+
+It has been tested with the translator.library from:
+
+- Workbench 1.0
+- Workbench 1.1
+- Workbench 1.2
+- Workbench 1.3 (same as 1.2)
+- Workbench 1.3.3
+- Workbench 2.04
+- Workbench 2.05 (same as 2.04)
+
+This file is not supplied.
 
 ## Resources
 
