@@ -330,6 +330,8 @@ void main(int argc, char **argv)
         fprintf(stderr, "\n");
         fprintf(stderr, "Examples:\n");
         fprintf(stderr, "%s \"Hello world.\"\n", argv[0]);
+        fprintf(stderr, "%s -l translator.library~1.0 \"Hello world.\"\n", argv[0]);
+        fprintf(stderr, "%s -l translator.library~1.1 \"Hello world.\"\n", argv[0]);
         fprintf(stderr, "%s -l translator.library~1.2 \"Hello world.\"\n", argv[0]);
         fprintf(stderr, "%s -l translator.library~1.3.3 \"Hello world.\"\n", argv[0]);
         fprintf(stderr, "%s -l translator.library~2.04 \"Hello world.\"\n", argv[0]);
