@@ -33,6 +33,13 @@
 
 void m68k_write_memory_32_no_log(unsigned int addr, unsigned int val);
 
+static int _pitch_parameter = 110; //pitch
+static int _rate_parameter = 150; //speaking rate (wpm)
+static int _volume_parameter = 64; //volume
+static int _sampfreq_parameter = 22200; //sampling frequency (Hz)
+static int _sex_parameter = 0; //sex 0=male 1=female
+static int _mode_parameter = 0; //mode 0=naturalf0 1=roboticf0 2=manualf0
+
 #define INPUT_BUFSIZE 0x1000
 static char *_inputptr = 0;
 static char _inputbuf[INPUT_BUFSIZE];
@@ -648,12 +655,12 @@ void instr_hook_callback(unsigned int pc)
                 m68k_write_memory_32(_narrator_rb+44, 0); //io_Offset
                 m68k_write_memory_32(_narrator_rb+40, _inputbase); //io_Data
                 m68k_write_memory_32(_narrator_rb+36, len); //io_length
-                m68k_write_memory_16(_narrator_rb+48, 150); //rate
-                m68k_write_memory_16(_narrator_rb+50, 110); //pitch
-                m68k_write_memory_16(_narrator_rb+52, 0); //mode 0 natural 1 robotic 2 manual
-                m68k_write_memory_16(_narrator_rb+54, 0); //sex 0 male 1 female
-                m68k_write_memory_16(_narrator_rb+62, 64); //volume 0-64
-                m68k_write_memory_16(_narrator_rb+64, 22200); //sampfreq
+                m68k_write_memory_16(_narrator_rb+48, _rate_parameter); //rate
+                m68k_write_memory_16(_narrator_rb+50, _pitch_parameter); //pitch
+                m68k_write_memory_16(_narrator_rb+52, _mode_parameter); //mode 0 natural 1 robotic 2 manual
+                m68k_write_memory_16(_narrator_rb+54, _sex_parameter); //sex 0 male 1 female
+                m68k_write_memory_16(_narrator_rb+62, _volume_parameter); //volume 0-64
+                m68k_write_memory_16(_narrator_rb+64, _sampfreq_parameter); //sampfreq
 
                 m68k_write_memory_8(_audiochanbase, 3);//not necessary to have all these values
                 m68k_write_memory_8(_audiochanbase, 5);
@@ -732,15 +739,7 @@ void instr_hook_callback(unsigned int pc)
 void main(int argc, char **argv)
 {
     for (int i=1; i<argc; i++) {
-        if (!strcmp(argv[i], "-d")) {
-            if (i+1 < argc) {
-                _library_path = argv[i+1];
-                i++;
-            } else {
-                fprintf(stderr, "error, expecting path for -d\n");
-                exit(1);
-            }
-        } else if (!strcmp(argv[i], "-")) {
+        if (!strcmp(argv[i], "-")) {
             fprintf(stderr, "reading first line from stdin\n");
             if (!fgets(_inputbuf, INPUT_BUFSIZE, stdin)) {
                 fprintf(stderr, "no input\n");
@@ -753,17 +752,99 @@ void main(int argc, char **argv)
                 }
             }
             _inputptr = _inputbuf;
+        } else if (!strcmp(argv[i], "-d")) {
+            if (i+1 < argc) {
+                _library_path = argv[i+1];
+                i++;
+            } else {
+                fprintf(stderr, "error, expecting path for -d\n");
+                exit(1);
+            }
+        } else if (!strcmp(argv[i], "-f")) {
+            if (i+1 < argc) {
+                long val = strtol(argv[i+1], 0, 10);
+                if ((val < 5000) || (val > 28000)) {
+                    fprintf(stderr, "error, sampling_frequency out of range (5000-28000)\n");
+                    exit(1);
+                }
+                _sampfreq_parameter = val;
+                i++;
+            } else {
+                fprintf(stderr, "error, expecting sampling_frequency for -f\n");
+                exit(1);
+            }
+        } else if (!strcmp(argv[i], "-m")) {
+            if (i+1 < argc) {
+                long val = strtol(argv[i+1], 0, 10);
+                if ((val < 0) || (val > 1)) {
+                    fprintf(stderr, "error, invalid mode (0-1)\n");
+                    exit(1);
+                }
+                _mode_parameter = val;
+                i++;
+            } else {
+                fprintf(stderr, "error, expecting mode for -m\n");
+                exit(1);
+            }
+        } else if (!strcmp(argv[i], "-p")) {
+            if (i+1 < argc) {
+                long val = strtol(argv[i+1], 0, 10);
+                if ((val < 65) || (val > 320)) {
+                    fprintf(stderr, "error, pitch out of range (65-320)\n");
+                    exit(1);
+                }
+                _pitch_parameter = val;
+                i++;
+            } else {
+                fprintf(stderr, "error, expecting pitch for -p\n");
+                exit(1);
+            }
+        } else if (!strcmp(argv[i], "-r")) {
+            if (i+1 < argc) {
+                long val = strtol(argv[i+1], 0, 10);
+                if ((val < 40) || (val > 400)) {
+                    fprintf(stderr, "error, rate out of range (40-400)\n");
+                    exit(1);
+                }
+                _rate_parameter = val;
+                i++;
+            } else {
+                fprintf(stderr, "error, expecting rate for -r\n");
+                exit(1);
+            }
+        } else if (!strcmp(argv[i], "-s")) {
+            if (i+1 < argc) {
+                long val = strtol(argv[i+1], 0, 10);
+                if ((val < 0) || (val > 1)) {
+                    fprintf(stderr, "error, invalid sex (0-1)\n");
+                    exit(1);
+                }
+                _sex_parameter = val;
+                i++;
+            } else {
+                fprintf(stderr, "error, expecting sex for -s\n");
+                exit(1);
+            }
         } else {
             _inputptr = argv[i];
         }
     }
 
     if (!_inputptr) {
-        fprintf(stderr, "Usage: %s [-d narrator_device_file] <-|phonetic_text>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [options] <-|phonetic_text>\n", argv[0]);
+        fprintf(stderr, "\n");
+        fprintf(stderr, "Options:\n");
+        fprintf(stderr, "-d narrator_device_file\n");
+        fprintf(stderr, "-f sampling_frequency (5000-28000)\n");
+        fprintf(stderr, "-m mode (0=natural 1=robotic)\n");
+        fprintf(stderr, "-p pitch (65-320)\n");
+        fprintf(stderr, "-r rate (40-400)\n");
+        fprintf(stderr, "-s sex (0=male 1=female)\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "Examples:\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "%s \"/HEH4LOW WER4LD.\"\n", argv[0]);
+        fprintf(stderr, "%s -p 110 -r 150 -f 22200 -s 1 -m 1 \"/HEH4LOW WER4LD.\"\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.0 \"/HEH4LOW WER4LD.\"\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.1 \"/HEH4LOW WER4LD.\"\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.2 \"/HEH4LOW WER4LD.\"\n", argv[0]);
@@ -772,6 +853,7 @@ void main(int argc, char **argv)
         fprintf(stderr, "\n");
         fprintf(stderr, "# read from stdin\n");
         fprintf(stderr, "%s -\n", argv[0]);
+        fprintf(stderr, "%s -p 110 -r 150 -f 22200 -s 1 -m 1 -\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.0 -\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.1 -\n", argv[0]);
         fprintf(stderr, "%s -d narrator.device~1.2 -\n", argv[0]);
