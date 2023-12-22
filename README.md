@@ -39,6 +39,9 @@ First, use 'translator' to convert English text to phonetic text.
 
 Then, use 'narrator' to convert phonetic text to PCM samples.
 
+Run 'translator' and 'narrator' with no arguments for a list of options, such
+as pitch, rate, and so forth.
+
 The 'say.sh' script is an example for Linux, and will run 'translator',
 'narrator', and then play the PCM samples with ALSA using 'aplay'.
 
@@ -48,10 +51,7 @@ $ sh say.sh "Hello world."
 
 The PCM samples are S8 (signed 8-bit) at 22200 Hz.
 
-Run the 'translator' and 'narrator' separately for more options, such as pitch,
-rate, and so forth.
-
-Another example:
+To run separately:
 
 ```
 $ ./translator "Hello world." >hello_world.txt
@@ -71,6 +71,12 @@ It will run faster if stderr is redirected to /dev/null:
 
 ```
 $ cat hello_world.txt | ./narrator - 2>/dev/null >hello_world.s8
+```
+
+On Linux, 'aplay' can be used to play the file:
+
+```
+$ aplay -f S8 -r 22200 hello_world.s8
 ```
 
 For OS X, a program such as Audacity or SoX will need to be used to convert
