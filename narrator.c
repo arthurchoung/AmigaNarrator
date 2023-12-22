@@ -706,7 +706,7 @@ void instr_hook_callback(unsigned int pc)
                     m68k_write_memory_8(a1+31, 0);
                     m68k_write_memory_32(a1+24, 0x8/*0xc*/);//io_Unit
                     m68k_write_memory_16(a1+32, 0xaaaa);//ioa_AllocKey
-                } else if (io_Command = 3) {//CMD_WRITE
+                } else if (io_Command == 3) {//CMD_WRITE
                     fprintf(stderr, "***** BeginIO CMD_WRITE\n");
                     write(1, _ram+ioa_Data, ioa_Length);
                 }
