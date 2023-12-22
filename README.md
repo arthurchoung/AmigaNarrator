@@ -39,6 +39,10 @@ First, use 'translator' to convert English text to phonetic text.
 
 Then, use 'narrator' to convert phonetic text to PCM samples.
 
+The PCM samples are S8 (signed 8-bit) at 22200 Hz.
+
+Don't forget to end your sentences with a period.
+
 Run 'translator' and 'narrator' with no arguments for a list of options, such
 as pitch, rate, and so forth.
 
@@ -48,8 +52,6 @@ The 'say.sh' script is an example for Linux, and will run 'translator',
 ```
 $ sh say.sh "Hello world."
 ```
-
-The PCM samples are S8 (signed 8-bit) at 22200 Hz.
 
 To run separately:
 
