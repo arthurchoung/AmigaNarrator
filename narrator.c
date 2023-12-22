@@ -880,7 +880,7 @@ void main(int argc, char **argv)
     m68k_set_cpu_type(M68K_CPU_TYPE_68000);
     m68k_pulse_reset();
 
-    process_hunks(_library_size);
+    process_hunks();
     process_library();
 
     for(;;) {
