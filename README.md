@@ -39,7 +39,7 @@ First, use 'translator' to convert English text to phonetic text.
 
 Then, use 'narrator' to convert phonetic text to PCM samples.
 
-The PCM samples are S8 (signed 8-bit) at 22200 Hz.
+The PCM samples are S8 (mono signed 8-bit) at 22200 Hz.
 
 Don't forget to end your sentences with a period.
 
